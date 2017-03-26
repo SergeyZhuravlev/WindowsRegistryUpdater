@@ -1,0 +1,221 @@
+﻿<Window x:Class="WindowsRegistryUpdater.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WindowsRegistryUpdater"
+        xmlns:converters="clr-namespace:WindowsRegistryUpdater.WPFConverters"
+        mc:Ignorable="d"
+        Title="WindowsRegistryUpdater" Height="718.148" Width="725.926">
+    <Window.Resources>
+        <converters:OperateStateToBrushConverter x:Shared="false" x:Key="OperateStateConverter"/>
+    </Window.Resources>
+    <Grid Height="Auto" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="184*"/>
+            <RowDefinition Height="60*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="25"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="253*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" VerticalAlignment="Top">
+                <CheckBox Content="Case sensitive" IsChecked="{Binding CaseSensitive}"/>
+                <Label Content="Replaced:" />
+                <TextBox Text="{Binding Path=Pattern, UpdateSourceTrigger=PropertyChanged}"/>
+                <Label Content="Replacer:"/>
+                <TextBox Text="{Binding Path=Replacer, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Top">
+                <CheckBox Content="In value" IsChecked="{Binding AllowFindInValue}"/>
+                <CheckBox Content="In key name" IsChecked="{Binding AllowFindInKeyName}"/>
+                <CheckBox Content="In path" IsChecked="{Binding AllowFindInPath}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="4" VerticalAlignment="Top">
+                <ProgressBar IsIndeterminate="{Binding InProgress}" Height="20" Margin="0,0,0,5"/>
+                <Button Command="{Binding Traverse}" Padding="5,0,5,0" MinWidth="100">
+                    <TextBlock>Find</TextBlock>
+                </Button>
+                <Button Command="{Binding Preview}" Padding="5,0,5,0" MinWidth="100">
+                    <TextBlock>Preview</TextBlock>
+                </Button>
+                <Button Command="{Binding Apply}" Padding="5,0,5,0" MinWidth="100">
+                    <TextBlock>Apply</TextBlock>
+                </Button>
+                <!-- <Button Command="{Binding Clear}" Padding="5,0,5,0" MinWidth="100">
+                    <TextBlock>Clear</TextBlock>
+                </Button> -->
+                <Button Command="{Binding Selection}" Padding="5,0,5,0" MinWidth="100">
+                    <TextBlock>Invert selection</TextBlock>
+                </Button>
+                <Button Command="{Binding Interrupt}" Padding="5,0,5,0" MinWidth="100">
+                    <TextBlock>Interrupt</TextBlock>
+                </Button>
+            </StackPanel>
+        </Grid>
+        <ScrollViewer Grid.Row="1">
+            <StackPanel>
+                <Expander Background="Tan"  HorizontalAlignment="Left" ExpandDirection="Down" IsExpanded="True">
+                    <Expander.Header>
+                        <TextBlock>
+                            <Run Text ="Matched values ("/>
+                            <Run Text ="{Binding Model.ValuesToChangings.Count, Mode=OneWay}"/>
+                            <Run Text =")"/>
+                        </TextBlock>
+                    </Expander.Header>
+                    <DataGrid AutoGenerateColumns="False"
+                        CanUserAddRows = "False"
+                        ItemsSource="{Binding Model.ValuesToChangings}">
+                        <DataGrid.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="Black" />
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn x:Name="X" Width="auto" Header="X" Binding="{Binding Enabled, Mode=TwoWay}"/>
+                            <DataGridTextColumn x:Name="Path" Width="*" Header="Path" Binding="{Binding Node.Path, Mode=OneWay}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="ToolTip" Value="{Binding Source}" />
+                                        <Setter Property="Background" Value="{Binding Path=Operate.State, Converter={StaticResource OperateStateConverter}}" />
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn x:Name="Key" Width="*" Header="Key" Binding="{Binding Node.ValueName, Mode=OneWay}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="Background" Value="{Binding Path=Operate.State, Converter={StaticResource OperateStateConverter}}" />
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn x:Name="Value" Width="*" Header="Value" Binding="{Binding Node.Value, Mode=OneWay}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="ToolTip" Value="{Binding Node}" />
+                                        <Setter Property="Background" Value="{Binding Path=Operate.State, Converter={StaticResource OperateStateConverter}}" />
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn x:Name="Result" Width="*" Header="Result" Binding="{Binding Operate.ErrorMessageWhileApply, Mode=OneWay}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="ToolTip" Value="{Binding Operate.ErrorMessageWhileApply}" />
+                                        <Setter Property="Background" Value="{Binding Path=Operate.State, Converter={StaticResource OperateStateConverter}}" />
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Expander>
+                <Expander Background="Tan" HorizontalAlignment="Left" ExpandDirection="Down" IsExpanded="True">
+                    <Expander.Header>
+                        <TextBlock>
+                            <Run Text ="Matched names ("/>
+                            <Run Text ="{Binding Model.NamesToChangings.Count, Mode=OneWay}"/>
+                            <Run Text =")"/>
+                        </TextBlock>
+                    </Expander.Header>
+                    <DataGrid AutoGenerateColumns="False"
+                        CanUserAddRows = "False"
+                        ItemsSource="{Binding Model.NamesToChangings}">
+                        <DataGrid.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="Black" />
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn x:Name="XN" Width="auto" Header="X" Binding="{Binding Enabled, Mode=TwoWay}"/>
+                            <DataGridTextColumn x:Name="PathN" Width="*" Header="Path" Binding="{Binding Node.Path, Mode=OneWay}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="ToolTip" Value="{Binding Source}" />
+                                        <Setter Property="Background" Value="{Binding Path=Operate.State, Converter={StaticResource OperateStateConverter}}" />
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn x:Name="KeyN" Width="*" Header="Key" Binding="{Binding Node.ValueName, Mode=OneWay}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="ToolTip" Value="{Binding Node}" />
+                                        <Setter Property="Background" Value="{Binding Path=Operate.State, Converter={StaticResource OperateStateConverter}}" />
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn x:Name="ResultN" Width="*" Header="Result" Binding="{Binding Operate.ErrorMessageWhileApply, Mode=OneWay}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="ToolTip" Value="{Binding Operate.ErrorMessageWhileApply}" />
+                                        <Setter Property="Background" Value="{Binding Path=Operate.State, Converter={StaticResource OperateStateConverter}}" />
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Expander>
+                <Expander Background="Tan" HorizontalAlignment="Left" ExpandDirection="Down" IsExpanded="True">
+                    <Expander.Header>
+                        <TextBlock>
+                            <Run Text ="Matched pathes ("/>
+                            <Run Text ="{Binding Model.PathesToChangings.Count, Mode=OneWay}"/>
+                            <Run Text =")"/>
+                        </TextBlock>
+                    </Expander.Header>
+                    <DataGrid AutoGenerateColumns="False"
+                        CanUserAddRows = "False"
+                        ItemsSource="{Binding Model.PathesToChangings}">
+                        <DataGrid.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="Black" />
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn x:Name="XP" Width="auto" Header="X" Binding="{Binding Enabled, Mode=TwoWay}"/>
+                            <DataGridTextColumn x:Name="PathP" Width="*" Header="Path" Binding="{Binding Node.Path, Mode=OneWay}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="ToolTip" Value="{Binding Source}" />
+                                        <Setter Property="Background" Value="{Binding Path=Operate.State, Converter={StaticResource OperateStateConverter}}" />
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn x:Name="ResultP" Width="*" Header="Result" Binding="{Binding Operate.ErrorMessageWhileApply, Mode=OneWay}">
+                                <DataGridTextColumn.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="ToolTip" Value="{Binding Operate.ErrorMessageWhileApply}" />
+                                        <Setter Property="Background" Value="{Binding Path=Operate.State, Converter={StaticResource OperateStateConverter}}" />
+                                    </Style>
+                                </DataGridTextColumn.CellStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+        <DataGrid AutoGenerateColumns="False" Grid.Row="2"
+                ScrollViewer.CanContentScroll="True" 
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                CanUserAddRows = "False"
+                IsReadOnly="True"
+                ItemsSource="{Binding Model.TraverseErrors}">
+                <!-- ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.Model.TraverseErrors}"> -->
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="TraverseErrors" Width="*" Header="Traverse Errors: " Binding="{Binding Mode=OneWay}">
+                    <DataGridTextColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Background" Value="Pink" />
+                        </Style>
+                    </DataGridTextColumn.CellStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
