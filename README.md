@@ -1,4 +1,4 @@
 # WindowsRegistryUpdater
-Massive registry replacer
+Massive registry text replacer
 
 WPF
